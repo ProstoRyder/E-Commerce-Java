@@ -21,6 +21,7 @@ public class CategoryController {
 
     private final CategoryMapper categoryMapper;
     private final CategoryService categoryService;
+
     @GetMapping("/{categoryId}")
     public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable String categoryId) {
         return ResponseEntity.ok(categoryMapper.toCategoryResponseDto(categoryService.findCategoryById(categoryId)));
@@ -30,15 +31,18 @@ public class CategoryController {
     public ResponseEntity<List<CategoryResponseDto>> getAllCategories() {
         return ResponseEntity.ok(categoryMapper.toCategoryResponseDtoList(categoryService.findAllCategories()));
     }
+
     @PostMapping
     public ResponseEntity<CategoryResponseDto> addCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto) {
         Category category = categoryService.addCategory(categoryRequestDto);
         return ResponseEntity.ok(categoryMapper.toCategoryResponseDto(category));
     }
+
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<String> deleteCategory(@PathVariable String categoryId) {
         return ResponseEntity.ok(categoryService.deleteCategory(categoryId));
     }
+
     @PutMapping("/{categoryId}")
     public ResponseEntity<CategoryResponseDto> updateCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto, @PathVariable String categoryId) {
         Category category = categoryService.updateCategory(categoryRequestDto, categoryId);

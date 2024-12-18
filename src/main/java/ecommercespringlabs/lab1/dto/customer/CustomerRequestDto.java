@@ -6,13 +6,9 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import lombok.Builder;
 import lombok.Value;
-import lombok.extern.jackson.Jacksonized;
 
 @Value
-@Builder
-@Jacksonized
 @GroupSequence({ CustomerRequestDto.class, ExtendedValidation.class})
 public class CustomerRequestDto {
     @NotBlank(message = "Name is required.")

@@ -1,6 +1,5 @@
 package ecommercespringlabs.lab1.web;
 
-import ecommercespringlabs.lab1.domain.order.Order;
 import ecommercespringlabs.lab1.dto.order.OrderResponseDto;
 import ecommercespringlabs.lab1.service.OrderService;
 import ecommercespringlabs.lab1.service.mapper.OrderMapper;
@@ -21,8 +20,8 @@ public class OrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<List<Order>> getAllOrder() {
-        return ResponseEntity.ok(orderService.findAllOrder());
+    public ResponseEntity<List<OrderResponseDto>> getAllOrder() {
+        return ResponseEntity.ok(orderMapper.toOrderResponseDtoList(orderService.findAllOrder()));
     }
 
     @GetMapping("/{id}")

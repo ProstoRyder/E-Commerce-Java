@@ -6,10 +6,16 @@ import jakarta.validation.GroupSequence;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
+@AllArgsConstructor
 @Data
 @GroupSequence({ProductRequestDto.class, ExtendedValidation.class})
+@NoArgsConstructor
+@Builder(toBuilder = true)
 public class ProductRequestDto {
     @NotBlank(message = "Title is required.")
     @Size(max = 50, message = "Title must not exceed 50 characters.")

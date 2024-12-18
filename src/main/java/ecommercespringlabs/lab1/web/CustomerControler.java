@@ -26,6 +26,6 @@ public class CustomerControler {
 
     @GetMapping
     public ResponseEntity<List<CustomerResponseDto>> getAllCategories() {
-        return ResponseEntity.ok(customerMapper.toCategoryResponseDtoList(customerService.findAllCustomer()));
+        return ResponseEntity.ok(customerMapper.toCustomerResponseDtoList(customerService.findAllCustomer()));
     }
 }

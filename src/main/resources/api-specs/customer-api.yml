@@ -1,0 +1,135 @@
+openapi: 3.0.3
+info:
+  title: Customer API
+  version: 1.0.0
+  description: API for managing customers in the eCommerce system
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local server
+
+paths:
+  /customers:
+    get:
+      summary: Retrieve all customers
+      operationId: getAllCustomers
+      tags:
+        - Customers
+      responses:
+        '200':
+          description: Successfully retrieved a list of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CustomerResponseDto'
+
+  /customers/{id}:
+    get:
+      summary: Retrieve customer details by ID
+      operationId: getCustomerDetailsById
+      tags:
+        - Customers
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: ID of the customer to retrieve
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Successfully retrieved customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CustomerResponseDto'
+        '404':
+          description: Customer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CustomerRequestDto:
+      type: object
+      required:
+        - name
+        - phoneNumber
+        - email
+        - address
+      properties:
+        name:
+          type: string
+          maxLength: 30
+          example: John Doe
+          description: Name of the customer
+        phoneNumber:
+          type: string
+          pattern: "^\\+?[0-9]{10,15}$"
+          example: +1234567890
+          description: Phone number of the customer
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+          description: Email address of the customer
+        address:
+          type: string
+          example: 123 Main St, Springfield
+          description: Address of the customer
+
+    CustomerResponseDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+          description: Unique identifier of the customer
+        name:
+          type: string
+          example: John Doe
+          description: Name of the customer
+        phoneNumber:
+          type: string
+          example: +1234567890
+          description: Phone number of the customer
+        email:
+          type: string
+          format: email
+          example: john.doe@example.com
+          description: Email address of the customer
+        address:
+          type: string
+          example: 123 Main St, Springfield
+          description: Address of the customer
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: 2024-06-11T15:20:00Z
+          description: The time when the error occurred
+        status:
+          type: integer
+          example: 404
+          description: HTTP status code
+        error:
+          type: string
+          example: Not Found
+          description: Error type
+        message:
+          type: string
+          example: Customer with ID 1 Not found
+          description: Detailed error message
+        path:
+          type: string
+          example: /api/v1/customers/1
+          description: Path where the error occurred
