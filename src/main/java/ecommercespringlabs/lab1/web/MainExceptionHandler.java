@@ -1,5 +1,6 @@
 package ecommercespringlabs.lab1.web;
 
+import ecommercespringlabs.lab1.featureToggle.exception.FeatureToggleNotEnabledException;
 import ecommercespringlabs.lab1.service.exception.CategoryNotFoundException;
 import ecommercespringlabs.lab1.service.exception.CustomerNotFoundException;
 import ecommercespringlabs.lab1.service.exception.OrderNotFoundException;
@@ -54,6 +55,14 @@ public class MainExceptionHandler extends ResponseEntityExceptionHandler {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
         problemDetail.setType(URI.create("product-not-found"));
         problemDetail.setTitle("Product not found");
+        return problemDetail;
+    }
+
+    @ExceptionHandler(FeatureToggleNotEnabledException.class)
+    public ProblemDetail handleFeatureToggleNotEnabledException(FeatureToggleNotEnabledException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.NOT_FOUND, ex.getMessage());
+        problemDetail.setType(URI.create("disabled-feature"));
+        problemDetail.setTitle("The feature is disabled");
         return problemDetail;
     }
 
