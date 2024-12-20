@@ -49,7 +49,7 @@ class CategoryServiceTest {
 
     @Test
     void addCategory_Success() {
-        CategoryRequestDto request = new CategoryRequestDto("New Space Exploration");
+        CategoryRequestDto request = new CategoryRequestDto("New Category");
         Category category = categoryService.addCategory(request);
         assertNotNull(category);
         assertEquals(request.getTitle(), category.getTitle());
@@ -57,7 +57,7 @@ class CategoryServiceTest {
 
     @Test
     void deleteCategory_Success() {
-        String validId = "123e4567-e89b-12d3-a456-426614174000"; // Існуючий ID
+        String validId = "123e4567-e89b-12d3-a456-426614174000";
         String result = categoryService.deleteCategory(validId);
         assertNotNull(result);
     }
@@ -72,8 +72,8 @@ class CategoryServiceTest {
 
     @Test
     void updateCategory_Success() {
-        String validId = "123e4567-e89b-12d3-a456-426614174000"; // Існуючий ID
-        CategoryRequestDto updateRequest = new CategoryRequestDto("Updated Galaxies");
+        String validId = "123e4567-e89b-12d3-a456-426614174000";
+        CategoryRequestDto updateRequest = new CategoryRequestDto("Updated Category");
         Category result = categoryService.updateCategory(updateRequest, validId);
         assertNotNull(result);
         assertEquals(updateRequest.getTitle(), result.getTitle());
@@ -83,9 +83,10 @@ class CategoryServiceTest {
     @Test
     void updateCategory_Invalid() {
         String invalidId = "00000000-0000-0000-0000-000000000000";
-        CategoryRequestDto updateRequest = new CategoryRequestDto("Attempted Update");
+        CategoryRequestDto updateRequest = new CategoryRequestDto("Updated Category");
         assertThrows(CategoryNotFoundException.class, () -> {
             categoryService.updateCategory(updateRequest, invalidId);
         });
     }
 }
+
