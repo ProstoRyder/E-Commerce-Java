@@ -1,0 +1,80 @@
+openapi: 3.0.3
+info:
+  title: CosmoCats API
+  version: 1.0.0
+  description: API for managing CosmoCats in the eCommerce system
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local server
+
+paths:
+  /cosmo-cat:
+    get:
+      summary: Retrieve all CosmoCats
+      operationId: getAllCosmoCats
+      tags:
+        - CosmoCats
+      responses:
+        '200':
+          description: Successfully retrieved a list of CosmoCats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CosmoCatResponseDto'
+        '403':
+          description: Feature toggle for CosmoCats is disabled
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    CosmoCatResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Unique identifier of the CosmoCat
+        name:
+          type: string
+          example: Luna
+          description: Name of the CosmoCat
+        breed:
+          type: string
+          example: Maine Coon
+          description: Breed of the CosmoCat
+        gender:
+          type: string
+          example: Female
+          description: Gender of the CosmoCat
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: 2024-12-19T19:00:00Z
+          description: The time when the error occurred
+        status:
+          type: integer
+          example: 403
+          description: HTTP status code
+        error:
+          type: string
+          example: Forbidden
+          description: Error type
+        message:
+          type: string
+          example: Feature toggle for CosmoCats is disabled
+          description: Detailed error message
+        path:
+          type: string
+          example: /api/v1/cosmo-cat
+          description: Path where the error occurred
