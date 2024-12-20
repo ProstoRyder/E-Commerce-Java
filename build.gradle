@@ -22,7 +22,7 @@ ext {
     minimumCoveragePerFile = 0.8
     filesExcludedFromCoverage = [
             "**/*Application.*",
-            "**/config/*Configuration.*",
+            "**/config/**",
             "**/common/**",
             "**/service/mapper/OrderMapper**",
             "**/service/impl/ProductService**"
@@ -51,6 +51,7 @@ dependencies {
     testImplementation 'org.mockito:mockito-core:5.8.0'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.1.0'
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 tasks.named('test') {
