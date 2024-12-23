@@ -1,0 +1,32 @@
+databaseChangeLog:
+  - changeSet:
+      id: categories
+      author: denys
+      changes:
+        - createTable:
+            tableName: category
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: title
+                  type: VARCHAR(50)
+                  constraints:
+                    unique: true
+                    nullable: false
+              - column:
+                  name: category_reference
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - createSequence:
+            sequenceName: id_category_seq
+            incrementBy: 50
+        - addUniqueConstraint:
+            tableName: category
+            columnNames: category_reference
+            constraintName: uq_category_reference

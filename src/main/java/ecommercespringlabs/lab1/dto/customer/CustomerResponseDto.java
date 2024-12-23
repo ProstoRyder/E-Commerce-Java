@@ -4,7 +4,7 @@ import lombok.Value;
 
 @Value
 public class CustomerResponseDto {
-    Long id;
+    String id;
     String name;
     String phoneNumber;
     String email;

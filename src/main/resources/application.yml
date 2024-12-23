@@ -2,6 +2,19 @@ spring:
   application:
     name: Lab1
 
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ecommerce
+    username: postgres
+    password: 1324
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+  liquibase:
+    change-log: classpath:liquibase/changelog.yaml
+    enabled: true
+
 springdoc:
   swagger-ui:
     path: /swagger-ui.html

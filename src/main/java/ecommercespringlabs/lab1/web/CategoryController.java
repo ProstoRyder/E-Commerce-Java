@@ -12,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/categories")
@@ -23,7 +24,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @GetMapping("/{categoryId}")
-    public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable String categoryId) {
+    public ResponseEntity<CategoryResponseDto> getCategoryById(@PathVariable UUID categoryId) {
         return ResponseEntity.ok(categoryMapper.toCategoryResponseDto(categoryService.findCategoryById(categoryId)));
     }
 
@@ -34,17 +35,16 @@ public class CategoryController {
 
     @PostMapping
     public ResponseEntity<CategoryResponseDto> addCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto) {
-        Category category = categoryService.addCategory(categoryRequestDto);
-        return ResponseEntity.ok(categoryMapper.toCategoryResponseDto(category));
+        return ResponseEntity.ok(categoryMapper.toCategoryResponseDto(categoryService.addCategory(categoryRequestDto)));
     }
 
     @DeleteMapping("/{categoryId}")
-    public ResponseEntity<String> deleteCategory(@PathVariable String categoryId) {
-        return ResponseEntity.ok(categoryService.deleteCategory(categoryId));
+    public void deleteCategory(@PathVariable UUID categoryId) {
+        categoryService.deleteCategory(categoryId);
     }
 
     @PutMapping("/{categoryId}")
-    public ResponseEntity<CategoryResponseDto> updateCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto, @PathVariable String categoryId) {
+    public ResponseEntity<CategoryResponseDto> updateCategory(@RequestBody @Valid CategoryRequestDto categoryRequestDto, @PathVariable UUID categoryId) {
         Category category = categoryService.updateCategory(categoryRequestDto, categoryId);
         return ResponseEntity.ok(categoryMapper.toCategoryResponseDto(category));
     }
