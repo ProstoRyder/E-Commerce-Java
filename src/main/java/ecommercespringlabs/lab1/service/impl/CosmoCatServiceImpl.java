@@ -1,6 +1,5 @@
 package ecommercespringlabs.lab1.service.impl;
 
-import ecommercespringlabs.lab1.domain.Category;
 import ecommercespringlabs.lab1.domain.CosmoCat;
 import ecommercespringlabs.lab1.service.CosmoCatsService;
 import org.springframework.stereotype.Service;

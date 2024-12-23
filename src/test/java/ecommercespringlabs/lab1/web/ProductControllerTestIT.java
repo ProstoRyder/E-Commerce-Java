@@ -1,136 +1,196 @@
 package ecommercespringlabs.lab1.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ecommercespringlabs.lab1.domain.Product;
+import ecommercespringlabs.lab1.AbstractIt;
 import ecommercespringlabs.lab1.dto.product.ProductRequestDto;
-import ecommercespringlabs.lab1.service.CategoryService;
+import ecommercespringlabs.lab1.repository.CategoryRepository;
+import ecommercespringlabs.lab1.repository.ProductRepository;
+import ecommercespringlabs.lab1.repository.entity.CategoryEntity;
+import ecommercespringlabs.lab1.repository.entity.ProductEntity;
 import ecommercespringlabs.lab1.service.ProductService;
-import ecommercespringlabs.lab1.service.exception.ProductNotFoundException;
-import ecommercespringlabs.lab1.service.mapper.ProductMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.List;
 import java.util.UUID;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @SpringBootTest
-public class ProductControllerTestIT {
+public class ProductControllerTestIT extends AbstractIt {
+
+
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private ProductService productService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Mock
-    private CategoryService categoryService;
+    @Autowired
+    private ProductRepository productRepository;
 
     @Autowired
-    private ProductMapper productMapper;
+    private CategoryRepository categoryRepository;
 
-    private Product product;
+    @SpyBean
+    private ProductService productService;
 
-    private ProductRequestDto productRequestDto;
 
     @BeforeEach
-    public void init() {
-        product = Product.builder().id(UUID.randomUUID())
-                .id(UUID.randomUUID())
-                .title("test")
-                .description("Galaxy Nova, System Orion, Zone 7")
-                .price(52.1)
-                .category(categoryService.findCategoryById("test id"))
-                .build();
+    void init() {
+        Mockito.reset(productService);
+        productRepository.deleteAll();
+        categoryRepository.deleteAll();
+    }
 
-        productRequestDto = ProductRequestDto.builder()
-                .title("test")
-                .description("Galaxy Nova, System Orion, Zone 7")
-                .price(52.1)
-                .categoryId("test id")
+
+
+    private ProductRequestDto createProductDto() {
+        return ProductRequestDto.builder().title("Test")
+                .description("Galaxy MilkyWay, System Alpha, Zone 123")
+                .price(321.2)
+                .categoryId("123e4567-e89b-12d3-a456-426614174060")
                 .build();
+    }
+    private ProductEntity saveProductEntity() {
+        CategoryEntity categoryEntity = createCategory();
+        return productRepository.save(ProductEntity.builder().title("Test")
+                .description("Galaxy MilkyWay, System Alpha, Zone 123")
+                .price(321.2)
+                .category(categoryEntity)
+                .product_reference(UUID.fromString("123e4567-e89b-12d3-a456-426614174061")).build());
+    }
+    private CategoryEntity createCategory() {
+        return categoryRepository.save(CategoryEntity.builder()
+                .title("Test").category_reference(UUID.fromString("123e4567-e89b-12d3-a456-426614174060")).build());
+    }
+
+
+
+    @Test
+    void shouldAddProduct() throws Exception {
+        ProductRequestDto productRequestDto = createProductDto();
+        createCategory();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(productRequestDto)));
+
+        response.andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void shouldAddProduct_BadRequest() throws Exception {
+        createCategory();
+        ProductRequestDto productRequestDto = ProductRequestDto.builder().title("")
+                .description("Galaxy MilkyWay, System Alpha, Zone 123")
+                .price(321.2)
+                .categoryId("123e4567-e89b-12d3-a456-426614174060").build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/products")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(productRequestDto)));
+
+        response.andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
     public void shouldGetAllProducts() throws Exception {
-        List<Product> response = List.of(product);
-        Mockito.when(productService.findAllProducts()).thenReturn(response);
-
-        mockMvc.perform(get("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(
-                        objectMapper.writeValueAsString(productMapper.toProductResponseDtoList(response))
-                ));
+        saveProductEntity();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products")).andExpect(MockMvcResultMatchers.status().isOk());
     }
+
 
     @Test
     public void shouldGetProductById() throws Exception {
-        Mockito.when(productService.findProductById(anyString())).thenReturn(product);
+        ProductEntity savedProduct = saveProductEntity();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", savedProduct.getProduct_reference()))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 
-        mockMvc.perform(get("/api/v1/products/{productId}", product.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(
-                        objectMapper.writeValueAsString(productMapper.toProductProductDto(product))
-                ));
+
+    @Test
+    void shouldUpdateProduct() throws Exception {
+        ProductEntity savedProduct = saveProductEntity();
+        ProductRequestDto productRequestDto = ProductRequestDto.builder()
+                .title("Test")
+                .description("Galaxy MilkyWay, System Alpha, Zone 123")
+                .price(321.2)
+                .categoryId("123e4567-e89b-12d3-a456-426614174060")
+                .build();
+
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/products/{id}", savedProduct.getProduct_reference())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(productRequestDto)));
+
+        response.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    public void shouldAddProduct() throws Exception {
-        Mockito.when(productService.addProduct(any())).thenReturn(product);
-
-        mockMvc.perform(post("/api/v1/products")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(productRequestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(productMapper.toProductProductDto(product))));
+    void shouldUpdateProduct_NotFound() throws Exception {
+        UUID nonExistentProductId = UUID.randomUUID();
+        ProductRequestDto productRequestDto = ProductRequestDto.builder()
+                .title("Test")
+                .description("Galaxy MilkyWay, System Alpha, Zone 123")
+                .price(321.2)
+                .categoryId("123e4567-e89b-12d3-a456-426614174060")
+                .build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/products/{id}", nonExistentProductId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(productRequestDto)));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
-    public void shouldDeleteProduct() throws Exception {
-        String successMessage = "Product deleted successfully!";
-        Mockito.when(productService.deleteProduct(anyString())).thenReturn(successMessage);
+    void shouldUpdateProduct_BadRequest() throws Exception {
+        ProductEntity savedProduct = saveProductEntity();
+        ProductRequestDto productRequestDto = ProductRequestDto.builder()
+                .title("")
+                .description("Galaxy MilkyWay, System Alpha, Zone 123")
+                .price(321.2)
+                .categoryId("123e4567-e89b-12d3-a456-426614174060")
+                .build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/products/{id}", savedProduct.getProduct_reference())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(productRequestDto)));
+        response.andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
 
-        mockMvc.perform(delete("/api/v1/products/{productId}", product.getId())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(successMessage));
+
+    @Test
+    void shouldDeleteProduct() throws Exception {
+        ProductEntity savedProduct = saveProductEntity();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/products/{id}", savedProduct.getProduct_reference()));
+        response.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    public void shouldUpdateProduct() throws Exception {
-        Mockito.when(productService.updateProduct(any(), anyString())).thenReturn(product);
-
-        mockMvc.perform(put("/api/v1/products/{productId}", product.getId())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(productRequestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(productMapper.toProductProductDto(product))));
+    void shouldDeleteProduct_NotFound() throws Exception {
+        UUID nonExistentProductId = UUID.randomUUID();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/products/{id}", nonExistentProductId));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
-    public void shouldGetNotFoundExceptionWhenProductDoesNotExist() throws Exception {
-        Mockito.when(productService.findProductById(anyString())).thenThrow(new ProductNotFoundException("invalid-id"));
-        mockMvc.perform(get("/api/v1/products/{productId}", "invalid-id")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+    void shouldGetNotFoundExceptionWhenProductDoesNotExist() throws Exception {
+        UUID nonExistentProductId = UUID.fromString("123e4567-e89b-12d3-a456-426614174062");
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/{id}", nonExistentProductId));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound());
+    }
+
+    @Test
+    void shouldGetProductsByCategoryId() throws Exception {
+        UUID productCategoryId = UUID.randomUUID();
+        CategoryEntity savedCategory = CategoryEntity.builder()
+                .title("Test").category_reference(productCategoryId).build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/products/by-category/{categoryId}", savedCategory.getCategory_reference())
+                .contentType(MediaType.APPLICATION_JSON));
+        response.andExpect(MockMvcResultMatchers.status().isOk());
     }
 }

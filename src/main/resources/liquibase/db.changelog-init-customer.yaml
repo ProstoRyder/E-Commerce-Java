@@ -1,0 +1,46 @@
+databaseChangeLog:
+  - changeSet:
+      id: customers
+      author: denys
+      changes:
+        - createTable:
+            tableName: customer
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: VARCHAR(20)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: email
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: address
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: customer_reference
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - createSequence:
+            sequenceName: id_customer_seq
+            incrementBy: 50
+        - addUniqueConstraint:
+            tableName: customer
+            columnNames: customer_reference
+            constraintName: uq_customer_reference

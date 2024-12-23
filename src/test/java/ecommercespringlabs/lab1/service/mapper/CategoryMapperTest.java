@@ -20,7 +20,7 @@ public class CategoryMapperTest {
 
     @BeforeEach
     void init() {
-        category = Category.builder().id(UUID.randomUUID()).title("test").build();
+        category = Category.builder().id(UUID.randomUUID().toString()).title("test").build();
         categoryList = List.of(category);
     }
 

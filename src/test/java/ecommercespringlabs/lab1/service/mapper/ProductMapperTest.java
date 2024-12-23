@@ -30,7 +30,7 @@ public class ProductMapperTest {
 
     @BeforeEach
     void init() {
-        product = Product.builder().id(UUID.randomUUID()).title("test").description("test description").price(52.1).category(categoryService.findCategoryById("test id")).build();
+        product = Product.builder().id(UUID.randomUUID().toString()).title("test").description("test description").price(52.1).build();
         productList = List.of(product);
     }
 

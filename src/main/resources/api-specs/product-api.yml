@@ -1,35 +1,27 @@
-openapi: 3.0.3
+openapi: 3.0.0
 info:
   title: Product API
+  description: API for managing products in an e-commerce application
   version: 1.0.0
-  description: API для управління продуктами у eCommerce системі.
-
-servers:
-  - url: http://localhost:8080/api/v1
-    description: Локальний сервер
-
 paths:
-  /products:
+  /api/v1/products:
     get:
-      summary: Отримати список всіх продуктів
+      summary: Get all products
+      description: Retrieve a list of all products.
       operationId: getAllProducts
-      tags:
-        - Products
       responses:
         '200':
-          description: Успішне отримання списку продуктів
+          description: A list of products
           content:
             application/json:
               schema:
                 type: array
                 items:
                   $ref: '#/components/schemas/ProductResponseDto'
-
     post:
-      summary: Додати новий продукт
+      summary: Add a new product
+      description: Create a new product in the system.
       operationId: addProduct
-      tags:
-        - Products
       requestBody:
         required: true
         content:
@@ -38,56 +30,62 @@ paths:
               $ref: '#/components/schemas/ProductRequestDto'
       responses:
         '200':
-          description: Успішне створення продукту
+          description: Product created
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
         '400':
-          description: Некоректні вхідні дані
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid product data
 
-  /products/{productId}:
+  /api/v1/products/{productId}:
     get:
-      summary: Отримати продукт за ID
+      summary: Get a product by its ID
+      description: Retrieve a product's details by its unique identifier.
       operationId: getProductById
-      tags:
-        - Products
       parameters:
         - name: productId
           in: path
+          description: The unique identifier of the product
           required: true
-          description: ID продукту для отримання
           schema:
             type: string
             format: uuid
       responses:
         '200':
-          description: Успішне отримання продукту
+          description: Product found
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
         '404':
-          description: Продукт не знайдено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-    put:
-      summary: Оновити продукт за ID
-      operationId: updateProduct
-      tags:
-        - Products
+          description: Product not found
+    delete:
+      summary: Delete a product
+      description: Remove a product from the system by its ID.
+      operationId: deleteProduct
       parameters:
         - name: productId
           in: path
+          description: The unique identifier of the product to delete
           required: true
-          description: ID продукту для оновлення
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '204':
+          description: Product deleted
+        '404':
+          description: Product not found
+    put:
+      summary: Update an existing product
+      description: Update the details of a product by its ID.
+      operationId: updateProduct
+      parameters:
+        - name: productId
+          in: path
+          description: The unique identifier of the product to update
+          required: true
           schema:
             type: string
             format: uuid
@@ -99,130 +97,95 @@ paths:
               $ref: '#/components/schemas/ProductRequestDto'
       responses:
         '200':
-          description: Успішне оновлення продукту
+          description: Product updated
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProductResponseDto'
+        '400':
+          description: Invalid product data
         '404':
-          description: Продукт не знайдено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Product not found
 
-    delete:
-      summary: Видалити продукт за ID
-      operationId: deleteProduct
-      tags:
-        - Products
+  /api/v1/products/by-category/{categoryId}:
+    get:
+      summary: Get products by category ID
+      description: Retrieve a list of products belonging to a specific category.
+      operationId: findAllByCategoryId
       parameters:
-        - name: productId
+        - name: categoryId
           in: path
+          description: The unique identifier of the category
           required: true
-          description: ID продукту для видалення
           schema:
             type: string
             format: uuid
       responses:
         '200':
-          description: Успішне видалення продукту
+          description: A list of products in the specified category
           content:
             application/json:
               schema:
-                type: string
-                example: Product successfully deleted
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductDetailsProjection'
         '404':
-          description: Продукт не знайдено
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
+          description: Category not found
 
 components:
   schemas:
     ProductRequestDto:
       type: object
-      required:
-        - title
-        - description
-        - price
-        - categoryId
       properties:
-        title:
+        name:
           type: string
-          maxLength: 50
-          example: "Samsung Galaxy S24"
-          description: Назва продукту
+          description: The name of the product
         description:
           type: string
-          maxLength: 255
-          example: "Новий флагманський смартфон з передовими функціями"
-          description: Опис продукту
+          description: The description of the product
         price:
           type: number
-          format: double
-          example: 999.99
-          description: Ціна продукту
+          format: float
+          description: The price of the product
         categoryId:
           type: string
           format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
-          description: ID категорії, до якої належить продукт
-
+          description: The unique identifier of the category the product belongs to
     ProductResponseDto:
       type: object
       properties:
         id:
           type: string
           format: uuid
-          example: "550e8400-e29b-41d4-a716-446655440000"
-          description: Унікальний ідентифікатор продукту
-        title:
+          description: The unique identifier of the product
+        name:
           type: string
-          example: "Samsung Galaxy S24"
-          description: Назва продукту
+          description: The name of the product
         description:
           type: string
-          example: "Новий флагманський смартфон з передовими функціями"
-          description: Опис продукту
+          description: The description of the product
         price:
           type: number
-          format: double
-          example: 999.99
-          description: Ціна продукту
-        category:
-          $ref: '#/components/schemas/Category'
-
-    Category:
+          format: float
+          description: The price of the product
+        categoryId:
+          type: string
+          format: uuid
+          description: The unique identifier of the category the product belongs to
+    ProductDetailsProjection:
       type: object
       properties:
         id:
           type: string
           format: uuid
-          example: "123e4567-e89b-12d3-a456-426614174000"
-          description: Унікальний ідентифікатор категорії
-        title:
+          description: The unique identifier of the product
+        name:
           type: string
-          example: "Electronics"
-          description: Назва категорії
-
-    ErrorResponse:
-      type: object
-      properties:
-        timestamp:
+          description: The name of the product
+        price:
+          type: number
+          format: float
+          description: The price of the product
+        categoryName:
           type: string
-          format: date-time
-          example: "2024-06-11T10:00:00Z"
-        status:
-          type: integer
-          example: 404
-        error:
-          type: string
-          example: "Not Found"
-        message:
-          type: string
-          example: "Product with ID 550e8400-e29b-41d4-a716-446655440000 Not found"
-        path:
-          type: string
-          example: "/api/v1/products/550e8400-e29b-41d4-a716-446655440000"
+          description: The name of the category the product belongs to

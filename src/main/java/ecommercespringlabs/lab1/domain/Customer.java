@@ -6,7 +6,7 @@ import lombok.Value;
 @Value
 @Builder
 public class Customer {
-    long id;
+    String id;
     String name;
     String phoneNumber;
     String email;

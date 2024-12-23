@@ -1,0 +1,44 @@
+databaseChangeLog:
+  - changeSet:
+      id: order-entry
+      author: denys
+      changes:
+        - createTable:
+            tableName: orders_entry
+            columns:
+              - column:
+                  name: id
+                  type: BIGINT
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: quantity
+                  type: INTEGER
+                  constraints:
+                    nullable: true
+              - column:
+                  name: id_product
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: order_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+        - createSequence:
+            sequenceName: id_orders_entry_seq
+            incrementBy: 50
+        - addForeignKeyConstraint:
+            baseTableName: orders_entry
+            baseColumnNames: id_product
+            referencedTableName: product
+            referencedColumnNames: id
+            constraintName: fk_orders_entry_product
+        - addForeignKeyConstraint:
+            baseTableName: orders_entry
+            baseColumnNames: order_id
+            referencedTableName: orders
+            referencedColumnNames: id
+            constraintName: fk_orders_entry_order

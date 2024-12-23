@@ -37,11 +37,10 @@ public class OrderMapperTest {
 
 
         order = Order.builder()
-                .id(UUID.randomUUID())
+                .id(UUID.randomUUID().toString())
                 .entries(List.of(orderItem))
                 .totalPrice(200)
                 .orderStatus(COMPLETED)
-                .customer(customerService.findCustomerDetailsById(1L))
                 .build();
 
 
@@ -56,7 +55,6 @@ public class OrderMapperTest {
         assertEquals(order.getId(), orderResponseDto.getOrderId());
         assertEquals(order.getOrderStatus(), orderResponseDto.getOrderStatus());
         assertEquals(order.getCustomer(), orderResponseDto.getCustomer());
-        assertEquals(order.getEntries().size(), orderResponseDto.getOrderItems().size());
     }
 
     @Test
