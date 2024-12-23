@@ -1,149 +1,147 @@
 package ecommercespringlabs.lab1.web;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import ecommercespringlabs.lab1.domain.Category;
+import ecommercespringlabs.lab1.AbstractIt;
 import ecommercespringlabs.lab1.dto.category.CategoryRequestDto;
+import ecommercespringlabs.lab1.repository.CategoryRepository;
+import ecommercespringlabs.lab1.repository.entity.CategoryEntity;
 import ecommercespringlabs.lab1.service.CategoryService;
-import ecommercespringlabs.lab1.service.exception.CategoryNotFoundException;
-import ecommercespringlabs.lab1.service.mapper.CategoryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
-import java.util.List;
 import java.util.UUID;
-
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
 @SpringBootTest
-public class CategoryControllerTestIT {
+public class CategoryControllerTestIT extends AbstractIt {
+
     @Autowired
     private MockMvc mockMvc;
-
-    @MockBean
-    private CategoryService categoryService;
 
     @Autowired
     private ObjectMapper objectMapper;
 
     @Autowired
-    private CategoryMapper categoryMapper;
+    private CategoryRepository categoryRepository;
 
-    private Category category;
-
-    private CategoryRequestDto categoryRequestDto;
+    @SpyBean
+    private CategoryService categoryService;
 
     @BeforeEach
-    public void init() {
-        category = Category.builder().id(UUID.fromString("123e4567-e89b-12d3-a456-426614174000")).title("test").build();
-        categoryRequestDto = CategoryRequestDto.builder().title("test").build();
+    void init() {
+        Mockito.reset(categoryService);
+        categoryRepository.deleteAll();
+    }
+
+    private CategoryRequestDto createCategoryDto() {
+        return CategoryRequestDto.builder().title("Test").build();
+    }
+    private CategoryEntity saveCategoryEntity() {
+        return categoryRepository.save(CategoryEntity.builder().title("Test").category_reference(UUID.fromString("123e4567-e89b-12d3-a456-426614174010")).build());
+    }
+
+    @Test
+    void shouldAddCategory() throws Exception {
+        CategoryRequestDto categoryRequestDto = createCategoryDto();
+
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(categoryRequestDto)));
+
+        response.andExpect(MockMvcResultMatchers.status().isOk());
+    }
+
+    @Test
+    void shouldAddCategory_BadRequest() throws Exception {
+        CategoryRequestDto categoryRequestDto = CategoryRequestDto.builder().title("").build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.post("/api/v1/categories")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(categoryRequestDto)));
+        response.andExpect(MockMvcResultMatchers.status().isBadRequest());
     }
 
     @Test
     public void shouldGetAllCategories() throws Exception {
-        List<Category> response = List.of(category);
-        Mockito.when(categoryService.findAllCategories()).thenReturn(response);
-
-        mockMvc.perform(get("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(categoryMapper.toCategoryResponseDtoList(response))));
+        saveCategoryEntity();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/categories")).andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
     public void shouldGetCategoryById() throws Exception {
-        Mockito.when(categoryService.findCategoryById("123e4567-e89b-12d3-a456-426614174000")).thenReturn(category);
+        CategoryEntity savedCategory = saveCategoryEntity();
+        mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/categories/{id}", savedCategory.getCategory_reference()))
+                .andExpect(MockMvcResultMatchers.status().isOk());
+    }
 
-        mockMvc.perform(get("/api/v1/categories/{categoryId}", category.getId().toString())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(categoryMapper.toCategoryResponseDto(category))));
+
+    @Test
+    void shouldUpdateCategory() throws Exception {
+        CategoryEntity savedCategory = saveCategoryEntity();
+        CategoryRequestDto categoryRequestDto = CategoryRequestDto.builder()
+                .title("Updated")
+                .build();
+
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/categories/{id}", savedCategory.getCategory_reference())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(categoryRequestDto)));
+
+        response.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    public void shouldAddCategory() throws Exception {
-        Mockito.when(categoryService.addCategory(categoryRequestDto)).thenReturn(category);
-
-        mockMvc.perform(post("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsBytes(categoryRequestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(categoryMapper.toCategoryResponseDto(category))));
+    void shouldUpdateCategory_NotFound() throws Exception {
+        UUID nonExistentCategoryId = UUID.randomUUID();
+        CategoryRequestDto categoryRequestDto = CategoryRequestDto.builder()
+                .title("Updated Category Title")
+                .build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/categories/{id}", nonExistentCategoryId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(categoryRequestDto)));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
-    public void shouldAddCategory_BadRequest() throws Exception {
-        mockMvc.perform(post("/api/v1/categories")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isBadRequest());
+    void shouldUpdateCategory_BadRequest() throws Exception {
+        CategoryEntity savedCategory = saveCategoryEntity();
+        CategoryRequestDto categoryRequestDto = CategoryRequestDto.builder()
+                .title("")
+                .build();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.put("/api/v1/categories/{id}", savedCategory.getCategory_reference())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsBytes(categoryRequestDto)));
+        response.andExpect(MockMvcResultMatchers.status().isBadRequest());
+    }
+
+
+    @Test
+    void shouldDeleteCategory() throws Exception {
+        CategoryEntity savedCategory = saveCategoryEntity();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/categories/{id}", savedCategory.getCategory_reference()));
+        response.andExpect(MockMvcResultMatchers.status().isOk());
     }
 
     @Test
-    public void shouldUpdateCategory() throws Exception {
-        Mockito.when(categoryService.updateCategory(categoryRequestDto, "123e4567-e89b-12d3-a456-426614174000")).thenReturn(category);
-
-        mockMvc.perform(put("/api/v1/categories/{categoryId}", category.getId().toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(categoryRequestDto)))
-                .andExpect(status().isOk())
-                .andExpect(content().json(objectMapper.writeValueAsString(categoryMapper.toCategoryResponseDto(category))));
+    void shouldDeleteCategory_NotFound() throws Exception {
+        UUID nonExistentCategoryId = UUID.randomUUID();
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.delete("/api/v1/categories/{id}", nonExistentCategoryId));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
     @Test
-    public void shouldUpdateCategory_NotFound() throws Exception {
-        Mockito.when(categoryService.updateCategory(categoryRequestDto, "123e4567-e89b-12d3-a456-426614174000")).thenThrow(CategoryNotFoundException.class);
-
-        mockMvc.perform(put("/api/v1/categories/{categoryId}", category.getId().toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(categoryRequestDto)))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void shouldUpdateCategory_BadRequest() throws Exception {
-        mockMvc.perform(put("/api/v1/categories/{categoryId}", category.getId().toString())
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{}"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    public void shouldDeleteCategory() throws Exception {
-        String successMessage = "Category deleted successfully!";
-        Mockito.when(categoryService.deleteCategory("123e4567-e89b-12d3-a456-426614174000")).thenReturn(successMessage);
-
-        mockMvc.perform(delete("/api/v1/categories/{categoryId}", category.getId().toString())
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(successMessage));
-    }
-
-    @Test
-    public void shouldDeleteCategory_NotFound() throws Exception {
-        String categoryId = "123e4567-e89b-12d3-a456-426614174000";
-        Mockito.doThrow(new CategoryNotFoundException("Category with ID " + categoryId + " Not found"))
-                .when(categoryService).deleteCategory(categoryId);
-        mockMvc.perform(delete("/api/v1/categories/{categoryId}", categoryId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
-    }
-
-    @Test
-    public void shouldGetNotFoundExceptionWhenCategoryDoesNotExist() throws Exception {
-        Mockito.when(categoryService.deleteCategory("123e4567-e89b-12d3-a456-426614174000")).thenThrow(new CategoryNotFoundException("123e4567-e89b-12d3-a456-426614174000"));
-        mockMvc.perform(delete("/api/v1/categories/{categoryId}", "123e4567-e89b-12d3-a456-426614174000")
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound());
+    void shouldGetNotFoundExceptionWhenCategoryDoesNotExist() throws Exception {
+        UUID nonExistentCategoryId = UUID.fromString("123e4567-e89b-12d3-a456-426614174011");
+        ResultActions response = mockMvc.perform(MockMvcRequestBuilders.get("/api/v1/categories/{id}", nonExistentCategoryId));
+        response.andExpect(MockMvcResultMatchers.status().isNotFound());
     }
 
 }

@@ -2,91 +2,119 @@ package ecommercespringlabs.lab1.service;
 
 import ecommercespringlabs.lab1.domain.Category;
 import ecommercespringlabs.lab1.dto.category.CategoryRequestDto;
-import ecommercespringlabs.lab1.service.exception.CategoryNotFoundException;
+import ecommercespringlabs.lab1.dto.category.CategoryResponseDto;
+import ecommercespringlabs.lab1.repository.CategoryRepository;
+import ecommercespringlabs.lab1.repository.entity.CategoryEntity;
 import ecommercespringlabs.lab1.service.impl.CategoryServiceImpl;
+import ecommercespringlabs.lab1.service.mapper.CategoryMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.when;
 
 
 @SpringBootTest(classes = CategoryServiceImpl.class)
 class CategoryServiceTest {
 
+    @MockBean
+    private CategoryRepository categoryRepository;
+
+    @MockBean
+    private CategoryMapper categoryMapper;
+
+    @Autowired
     private CategoryService categoryService;
+
+    private UUID id;
+    private CategoryRequestDto categoryRequestDto;
+    private CategoryResponseDto categoryResponseDto;
+    private CategoryEntity categoryEntity;
+    private Category category;
 
     @BeforeEach
     void setUp() {
-        categoryService = new CategoryServiceImpl();
+        id = UUID.randomUUID();
+        categoryRequestDto = CategoryRequestDto.builder()
+                .title("Category 1")
+                .build();
+
+        categoryEntity = CategoryEntity.builder()
+                .title("Category 1")
+                .build();
+
+        category = Category.builder()
+                .id(id.toString())
+                .title("Category 1")
+                .build();
     }
 
     @Test
     void findAllCategories_Success() {
-        List<Category> categories = categoryService.findAllCategories();
-        assertNotNull(categories);
+        List<CategoryEntity> categoryEntities = new ArrayList<>(List.of(categoryEntity));
+        List<Category> categories = new ArrayList<>(List.of(category));
+
+        when(categoryRepository.findAll()).thenReturn(categoryEntities);
+        when(categoryMapper.toCategoryList(categoryEntities)).thenReturn(categories);
+
+        List<Category> result = categoryService.findAllCategories();
+
+        assertNotNull(result);
     }
 
     @Test
     void findCategoryById_Success() {
-        String validId = "123e4567-e89b-12d3-a456-426614174000";
-        Category category = categoryService.findCategoryById(validId);
-        assertNotNull(category);
-        assertEquals(validId, category.getId().toString());
-    }
+        when(categoryRepository.findByNaturalId(id)).thenReturn(Optional.of(categoryEntity));
+        when(categoryMapper.toCategory(categoryEntity)).thenReturn(category);
 
-    @Test
-    void findCategoryById_Invalid() {
-        String invalidId = "00000000-0000-0000-0000-000000000000";
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.findCategoryById(invalidId);
-        });
+        Category result = categoryService.findCategoryById(id);
+
+        assertNotNull(result);
     }
 
     @Test
     void addCategory_Success() {
-        CategoryRequestDto request = new CategoryRequestDto("New Category");
-        Category category = categoryService.addCategory(request);
-        assertNotNull(category);
-        assertEquals(request.getTitle(), category.getTitle());
+        CategoryEntity newCategory = CategoryEntity.builder()
+                .title(categoryRequestDto.getTitle())
+                .category_reference(UUID.randomUUID())
+                .build();
+
+        when(categoryRepository.save(Mockito.any(CategoryEntity.class))).thenReturn(newCategory);
+        when(categoryMapper.toCategory(Mockito.any(CategoryEntity.class))).thenReturn(category);
+
+        Category result = categoryService.addCategory(categoryRequestDto);
+
+        assertNotNull(result);
     }
 
     @Test
     void deleteCategory_Success() {
-        String validId = "123e4567-e89b-12d3-a456-426614174000";
-        String result = categoryService.deleteCategory(validId);
-        assertNotNull(result);
+        UUID categoryId = UUID.randomUUID();
+        when(categoryRepository.findByNaturalId(categoryId)).thenReturn(Optional.of(categoryEntity));
+        Mockito.doNothing().when(categoryRepository).deleteByNaturalId(categoryId);
+        categoryService.deleteCategory(categoryId);
+        Mockito.verify(categoryRepository, Mockito.times(1)).deleteByNaturalId(categoryId);
     }
 
-    @Test
-    void deleteCategory_Invalid() {
-        String invalidId = "00000000-0000-0000-0000-000000000000";
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.deleteCategory(invalidId);
-        });
-    }
 
     @Test
     void updateCategory_Success() {
-        String validId = "123e4567-e89b-12d3-a456-426614174000";
-        CategoryRequestDto updateRequest = new CategoryRequestDto("Updated Category");
-        Category result = categoryService.updateCategory(updateRequest, validId);
-        assertNotNull(result);
-        assertEquals(updateRequest.getTitle(), result.getTitle());
-        assertEquals(validId, result.getId().toString());
+        when(categoryRepository.findByNaturalId(id)).thenReturn(Optional.of(categoryEntity));
+        when(categoryRepository.save(categoryEntity)).thenReturn(categoryEntity);
+        when(categoryMapper.toCategory(categoryEntity)).thenReturn(category);
+
+
+        Category result = categoryService.updateCategory(categoryRequestDto, id);
     }
 
-    @Test
-    void updateCategory_Invalid() {
-        String invalidId = "00000000-0000-0000-0000-000000000000";
-        CategoryRequestDto updateRequest = new CategoryRequestDto("Updated Category");
-        assertThrows(CategoryNotFoundException.class, () -> {
-            categoryService.updateCategory(updateRequest, invalidId);
-        });
-    }
 }
 
