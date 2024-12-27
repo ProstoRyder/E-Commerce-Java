@@ -1,0 +1,146 @@
+openapi: 3.0.3
+info:
+  title: Category API
+  version: 1.0.0
+  description: API for managing categories in the eCommerce system
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local server
+
+paths:
+  /categories:
+    get:
+      summary: Retrieve all categories
+      operationId: getAllCategories
+      tags:
+        - Categories
+      responses:
+        '200':
+          description: A list of all categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponseDto'
+    post:
+      summary: Add a new category
+      operationId: addCategory
+      tags:
+        - Categories
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequestDto'
+      responses:
+        '200':
+          description: Successfully created a category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseDto'
+        '400':
+          description: Validation error
+
+  /categories/{categoryId}:
+    get:
+      summary: Retrieve a category by ID
+      operationId: getCategoryById
+      tags:
+        - Categories
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to retrieve
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully retrieved a category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseDto'
+        '404':
+          description: Category not found
+
+    put:
+      summary: Update an existing category
+      operationId: updateCategory
+      tags:
+        - Categories
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to update
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequestDto'
+      responses:
+        '200':
+          description: Successfully updated a category
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponseDto'
+        '404':
+          description: Category not found
+        '400':
+          description: Validation error
+
+    delete:
+      summary: Delete a category by ID
+      operationId: deleteCategory
+      tags:
+        - Categories
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to delete
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successfully deleted a category
+          content:
+            application/json:
+              schema:
+                type: string
+        '404':
+          description: Category not found
+
+components:
+  schemas:
+    CategoryRequestDto:
+      type: object
+      required:
+        - title
+      properties:
+        title:
+          type: string
+          maxLength: 100
+          example: Electronics
+          description: The title of the category (required)
+
+    CategoryResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          example: 123e4567-e89b-12d3-a456-426614174000
+          description: The unique identifier of the category
+        title:
+          type: string
+          example: Electronics
+          description: The title of the category

@@ -1,0 +1,228 @@
+openapi: 3.0.3
+info:
+  title: Product API
+  version: 1.0.0
+  description: API для управління продуктами у eCommerce системі.
+
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Локальний сервер
+
+paths:
+  /products:
+    get:
+      summary: Отримати список всіх продуктів
+      operationId: getAllProducts
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Успішне отримання списку продуктів
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ProductResponseDto'
+
+    post:
+      summary: Додати новий продукт
+      operationId: addProduct
+      tags:
+        - Products
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequestDto'
+      responses:
+        '200':
+          description: Успішне створення продукту
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+        '400':
+          description: Некоректні вхідні дані
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /products/{productId}:
+    get:
+      summary: Отримати продукт за ID
+      operationId: getProductById
+      tags:
+        - Products
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: ID продукту для отримання
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Успішне отримання продукту
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+        '404':
+          description: Продукт не знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    put:
+      summary: Оновити продукт за ID
+      operationId: updateProduct
+      tags:
+        - Products
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: ID продукту для оновлення
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductRequestDto'
+      responses:
+        '200':
+          description: Успішне оновлення продукту
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductResponseDto'
+        '404':
+          description: Продукт не знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+    delete:
+      summary: Видалити продукт за ID
+      operationId: deleteProduct
+      tags:
+        - Products
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: ID продукту для видалення
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Успішне видалення продукту
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Product successfully deleted
+        '404':
+          description: Продукт не знайдено
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    ProductRequestDto:
+      type: object
+      required:
+        - title
+        - description
+        - price
+        - categoryId
+      properties:
+        title:
+          type: string
+          maxLength: 50
+          example: "Samsung Galaxy S24"
+          description: Назва продукту
+        description:
+          type: string
+          maxLength: 255
+          example: "Новий флагманський смартфон з передовими функціями"
+          description: Опис продукту
+        price:
+          type: number
+          format: double
+          example: 999.99
+          description: Ціна продукту
+        categoryId:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: ID категорії, до якої належить продукт
+
+    ProductResponseDto:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "550e8400-e29b-41d4-a716-446655440000"
+          description: Унікальний ідентифікатор продукту
+        title:
+          type: string
+          example: "Samsung Galaxy S24"
+          description: Назва продукту
+        description:
+          type: string
+          example: "Новий флагманський смартфон з передовими функціями"
+          description: Опис продукту
+        price:
+          type: number
+          format: double
+          example: 999.99
+          description: Ціна продукту
+        category:
+          $ref: '#/components/schemas/Category'
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: "123e4567-e89b-12d3-a456-426614174000"
+          description: Унікальний ідентифікатор категорії
+        title:
+          type: string
+          example: "Electronics"
+          description: Назва категорії
+
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2024-06-11T10:00:00Z"
+        status:
+          type: integer
+          example: 404
+        error:
+          type: string
+          example: "Not Found"
+        message:
+          type: string
+          example: "Product with ID 550e8400-e29b-41d4-a716-446655440000 Not found"
+        path:
+          type: string
+          example: "/api/v1/products/550e8400-e29b-41d4-a716-446655440000"

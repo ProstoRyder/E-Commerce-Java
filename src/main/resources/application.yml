@@ -1,0 +1,16 @@
+spring:
+  application:
+    name: Lab1
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+    operationsSorter: alpha
+    tagsSorter: alpha
+    display-request-duration: true
+    doc-expansion: none
+  api-docs:
+    path: /v3/api-docs
+  default-produces-media-type: application/json
+  default-consumes-media-type: application/json
