@@ -54,7 +54,7 @@ public class OrderControllerTestIT {
                 .build();
         order = Order.builder()
                 .id(UUID.randomUUID())
-                .customer(customerService.findCustomerDetailsById(1L))
+                .customer(customerService.findCustomerDetailsById("123e4567-e89b-12d3-a456-426614174000"))
                 .totalPrice(823)
                 .entries(List.of(orderEntry))
                 .build();

@@ -41,7 +41,7 @@ public class OrderMapperTest {
                 .entries(List.of(orderItem))
                 .totalPrice(200)
                 .orderStatus(COMPLETED)
-                .customer(customerService.findCustomerDetailsById(1L))
+                .customer(customerService.findCustomerDetailsById(UUID.randomUUID().toString()))
                 .build();
 
 

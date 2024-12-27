@@ -2,9 +2,11 @@ package ecommercespringlabs.lab1.dto.customer;
 
 import lombok.Value;
 
+import java.util.UUID;
+
 @Value
 public class CustomerResponseDto {
-    Long id;
+    UUID id;
     String name;
     String phoneNumber;
     String email;

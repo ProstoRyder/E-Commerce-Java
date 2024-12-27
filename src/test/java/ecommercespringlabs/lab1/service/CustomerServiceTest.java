@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -21,7 +22,7 @@ public class CustomerServiceTest {
 
     @BeforeEach
     public void init() {
-        customer = Customer.builder().id(1L).name("Barsik").phoneNumber("052993231").email("jnjksdf@gmail.com").address("underland").build();
+        customer = Customer.builder().id(UUID.randomUUID()).name("Barsik").phoneNumber("052993231").email("jnjksdf@gmail.com").address("underland").build();
     }
 
     @Test
@@ -33,9 +34,9 @@ public class CustomerServiceTest {
 
     @Test
     void findCustomerById() {
-        long id = customer.getId();
-        Mockito.when(customerService.findCustomerDetailsById(id)).thenReturn(customer);
-        assertNotNull(customerService.findCustomerDetailsById(id));
+        UUID id = customer.getId();
+        Mockito.when(customerService.findCustomerDetailsById(id.toString())).thenReturn(customer);
+        assertNotNull(customerService.findCustomerDetailsById(id.toString()));
     }
 
 }

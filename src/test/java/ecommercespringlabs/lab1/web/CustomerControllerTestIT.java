@@ -16,8 +16,8 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -42,7 +42,7 @@ public class CustomerControllerTestIT {
 
     @BeforeEach
     public void init() {
-        customer = Customer.builder().id(1L).name("Barsik").phoneNumber("052993231").email("jnjksdf@gmail.com").address("underland").build();
+        customer = Customer.builder().id(UUID.randomUUID()).name("Barsik").phoneNumber("052993231").email("jnjksdf@gmail.com").address("underland").build();
     }
 
     @Test
@@ -58,7 +58,7 @@ public class CustomerControllerTestIT {
 
     @Test
     public void shouldGetCustomerById() throws Exception {
-        Mockito.when(customerService.findCustomerDetailsById(anyLong())).thenReturn(customer);
+        Mockito.when(customerService.findCustomerDetailsById(anyString())).thenReturn(customer);
 
         mockMvc.perform(get("/api/v1/customers/{id}", customer.getId())
                         .contentType(MediaType.APPLICATION_JSON))
@@ -66,9 +66,11 @@ public class CustomerControllerTestIT {
                 .andExpect(content().json(objectMapper.writeValueAsString(customerMapper.toCustomerResponseDto(customer))));
     }
 
+
+
     @Test
     public void shouldGetNotFoundExceptionWhenCustomerDoesNotExist() throws Exception {
-        long invalidId = 100L;
+        String invalidId = UUID.randomUUID().toString();
         Mockito.when(customerService.findCustomerDetailsById(invalidId)).thenThrow(new CustomerNotFoundException(invalidId));
         mockMvc.perform(get("/api/v1/customers/{customerId}", invalidId)
                         .contentType(MediaType.APPLICATION_JSON))

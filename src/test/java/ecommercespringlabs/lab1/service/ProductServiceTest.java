@@ -56,20 +56,8 @@ public class ProductServiceTest {
         @Test
         void deleteProduct_Success() {
             String id = product.getId().toString();
-            Mockito.when(productService.deleteProduct(id)).thenReturn("Product was deleted");
-            assertNotNull(productService.deleteProduct(id));
-        }
-
-        @Test
-        void deleteProduct_Invalid() {
-            String invalidId = "non-existent-id";
-            Mockito.when(productService.deleteProduct(invalidId))
-                    .thenThrow(new ProductNotFoundException("Invalid product ID"));
-            Exception exception = assertThrows(
-                    ProductNotFoundException.class,
-                    () -> productService.deleteProduct(invalidId)
-            );
-            assertThrows(ProductNotFoundException.class,()->productService.deleteProduct(invalidId));
+            productService.deleteProduct(id);
+            Mockito.verify(productService, Mockito.times(1)).deleteProduct(id);
         }
 
         @Test

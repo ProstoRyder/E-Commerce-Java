@@ -19,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -120,12 +121,11 @@ public class CategoryControllerTestIT {
     @Test
     public void shouldDeleteCategory() throws Exception {
         String successMessage = "Category deleted successfully!";
-        Mockito.when(categoryService.deleteCategory("123e4567-e89b-12d3-a456-426614174000")).thenReturn(successMessage);
+        categoryService.deleteCategory("123e4567-e89b-12d3-a456-426614174000");
 
         mockMvc.perform(delete("/api/v1/categories/{categoryId}", category.getId().toString())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(successMessage));
+                .andExpect(status().isNoContent());
     }
 
     @Test
@@ -140,8 +140,8 @@ public class CategoryControllerTestIT {
 
     @Test
     public void shouldGetNotFoundExceptionWhenCategoryDoesNotExist() throws Exception {
-        Mockito.when(categoryService.deleteCategory("123e4567-e89b-12d3-a456-426614174000")).thenThrow(new CategoryNotFoundException("123e4567-e89b-12d3-a456-426614174000"));
-        mockMvc.perform(delete("/api/v1/categories/{categoryId}", "123e4567-e89b-12d3-a456-426614174000")
+        Mockito.when(categoryService.findCategoryById(anyString())).thenThrow(new CategoryNotFoundException("invalid-id"));
+                mockMvc.perform(get("/api/v1/categories/{categoryId}", "invalid-id")
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

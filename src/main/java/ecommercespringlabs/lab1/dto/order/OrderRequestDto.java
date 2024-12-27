@@ -9,10 +9,8 @@ import java.util.List;
 public class OrderRequestDto {
     @NotNull(message = "Items cannot be null")
     List<OrderEntryDto> orderEntries;
-
     @NotNull(message = "Price cannot be null")
     @Min(value = 0)
     Double totalPrice;
-
-    Long customerId;
+    String customerId;
 }

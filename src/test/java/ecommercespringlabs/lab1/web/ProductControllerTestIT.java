@@ -107,12 +107,11 @@ public class ProductControllerTestIT {
     @Test
     public void shouldDeleteProduct() throws Exception {
         String successMessage = "Product deleted successfully!";
-        Mockito.when(productService.deleteProduct(anyString())).thenReturn(successMessage);
+        productService.deleteProduct(anyString());
 
         mockMvc.perform(delete("/api/v1/products/{productId}", product.getId())
                         .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isOk())
-                .andExpect(content().string(successMessage));
+                .andExpect(status().isNoContent());
     }
 
     @Test

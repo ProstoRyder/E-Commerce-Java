@@ -9,6 +9,6 @@ public interface CategoryService {
     List<Category> findAllCategories();
     Category findCategoryById(String id);
     Category addCategory(CategoryRequestDto categoryRequestDto);
-    String deleteCategory(String id);
+    void deleteCategory(String id);
     Category updateCategory(CategoryRequestDto categoryRequestDto, String id);
 }

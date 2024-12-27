@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/customers")
@@ -20,8 +21,8 @@ public class CustomerControler {
     private final CustomerMapper customerMapper;
 
     @GetMapping("/{id}")
-    public ResponseEntity<CustomerResponseDto> getCustomerDetailsById(@PathVariable Long id) {
-        return ResponseEntity.ok(customerMapper.toCustomerResponseDto(customerService.findCustomerDetailsById(id)));
+    public ResponseEntity<CustomerResponseDto> getCustomerDetailsById(@PathVariable UUID id) {
+        return ResponseEntity.ok(customerMapper.toCustomerResponseDto(customerService.findCustomerDetailsById(id.toString())));
     }
 
     @GetMapping

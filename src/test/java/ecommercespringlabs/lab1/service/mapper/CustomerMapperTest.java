@@ -8,6 +8,7 @@ import org.mapstruct.factory.Mappers;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -21,7 +22,7 @@ public class CustomerMapperTest {
 
     @BeforeEach
     void init() {
-        customer = Customer.builder().id(1L).name("Test name").phoneNumber("0987654321").email("test@gmail.com").address("testland").build();
+        customer = Customer.builder().id(UUID.randomUUID()).name("Test name").phoneNumber("0987654321").email("test@gmail.com").address("testland").build();
         customerList = List.of(customer);
     }
 
@@ -29,7 +30,7 @@ public class CustomerMapperTest {
     void toCustomerResponseDto() {
         CustomerResponseDto customerResponseDto = customerMapper.toCustomerResponseDto(customer);
         assertNotNull(customerResponseDto);
-        assertEquals(customer.getId(), customerResponseDto.getId().longValue());
+        assertEquals(customer.getId(), customerResponseDto.getId());
         assertEquals(customer.getName(), customerResponseDto.getName());
     }
 

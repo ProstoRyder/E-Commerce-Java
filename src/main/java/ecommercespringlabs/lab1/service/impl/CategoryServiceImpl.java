@@ -51,10 +51,9 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public String deleteCategory(String id) {
+    public void deleteCategory(String id) {
         Category category = findCategoryById(id);
         categories.remove(category);
-        return "Category with id " + id + " was deleted";
     }
 
     @Override
